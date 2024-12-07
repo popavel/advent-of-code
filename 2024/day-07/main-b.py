@@ -4,10 +4,11 @@ def check_equation(y: int, xs: list[int]) -> bool:
 
     previous = [xs[0]]
     for i in range(1, len(xs), 1):
-        next = [0] * (len(previous) * 2)
+        next = [0] * (len(previous) * 3)
         for j in range(0, len(previous), 1):
             next[j] = previous[j] + xs[i]
             next[j+len(previous)] = previous[j] * xs[i]
+            next[j+len(previous)*2] = int(str(previous[j]) + str(xs[i]))
         previous = next
 
     return True if y in previous else False
