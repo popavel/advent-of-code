@@ -94,19 +94,15 @@ def create_dag(grid):
 
 def bfs(node):
     reachable = []
-    node.visited = True
     reachable.append(node)
     nexts = deque()
     for n in node.neighbours:
-        if not n.visited:
-            nexts.append(n)
+        nexts.append(n)
     while len(nexts) > 0:
         n = nexts.pop()
-        n.visited = True
         reachable.append(n)
         for nn in n.neighbours:
-            if not nn.visited:
-                nexts.append(nn)
+            nexts.append(nn)
 
     count = 0
     for n in reachable:
@@ -134,9 +130,6 @@ if __name__ == '__main__':
     scores = []
     for n in starting_nodes:
         scores.append(bfs(n))
-        for row in dag:
-            for nn in row:
-                nn.visited = False
 
     print(scores)
     print(sum(scores))
