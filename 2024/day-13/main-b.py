@@ -1,3 +1,6 @@
+import numpy as np
+
+
 if __name__ == '__main__':
     with open('input-a.txt', 'r') as f:
         lines = [line.strip() for line in f.readlines() if line.strip()]
@@ -20,23 +23,20 @@ if __name__ == '__main__':
         result[0] = result[0][2:]
         result[1] = result[1][2:]
         result = list(map(int, result))
+        result = [i + 10_000_000_000_000 for i in result]
 
         input_data.append((a, b, result))
 
     tokens = []
     for a, b, result in input_data:
-        combinations = [ [(0,0)]*101 for i in range(101) ]
-        for i in range(101):
-            for j in range(101):
-                combinations[i][j] = (a[0]*i + b[0]*j, a[1]*i + b[1]*j)
+        A = np.array([[a[0], b[0]], [a[1], b[1]]])
+        B = np.array([result[0], result[1]])
+        x = np.linalg.solve(A, B)
+        print(x)
+        x_int = np.rint(x)
+        if abs(x[0] - x_int[0]) < 0.0001 and abs(x[1] - x_int[1]) < 0.0001:
+            if x[0] < 0 or x[1] < 0:
+                raise Exception('Negative values')
+            tokens.append(x[0]*3 + x[1])
 
-        prices = []
-        for i in range(101):
-            for j in range(101):
-                if combinations[i][j] == (result[0], result[1]):
-                    prices.append(i*3 + j)
-        if len(prices) > 0:
-            tokens.append(min(prices))
-
-    print(tokens)
     print(sum(tokens))
