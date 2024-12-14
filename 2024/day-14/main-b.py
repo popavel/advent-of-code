@@ -1,5 +1,5 @@
 from functools import reduce
-from math import prod
+from math import prod, sqrt
 
 m_test = 7
 n_test = 11
@@ -10,7 +10,6 @@ if __name__ == '__main__':
     pvs = []
     m = m_input
     n = n_input
-    iter = iter_test
     with open('input-a.txt', 'r') as f:
         for line in f:
             p_v = line.strip().split()
@@ -20,20 +19,20 @@ if __name__ == '__main__':
             v = list(map(int, p_v[1][2:].split(',')))
             pvs.append((p, v))
 
-    pvs_moved = [(lambda p, v: ((p[0]+v[0]*iter)%n, (p[1]+v[1]*iter)%m))(p,v) for p, v in pvs]
-
-    counts = [0,0,0,0]
     m_middle = m//2
     n_middle = n//2
-    for p in pvs_moved:
-        if p[0] < n_middle and p[1] < m_middle:
-            counts[0] += 1
-        elif p[0] < n_middle and p[1] > m_middle:
-            counts[1] += 1
-        elif p[0] > n_middle and p[1] < m_middle:
-            counts[2] += 1
-        elif p[0] > n_middle and p[1] > m_middle:
-            counts[3] += 1
+    dist = 0
+    for p, v in pvs:
+        dist += sqrt((p[0] - n_middle)**2 + (p[1] - m_middle)**2)
+    iter = 0
+    distances = [dist]
+    while iter<10001:
+        iter += 1
+        pvs_moved = [(lambda p, v: ((p[0]+v[0]*iter)%n, (p[1]+v[1]*iter)%m))(p,v) for p, v in pvs]
+        new_dist = 0
+        for p in pvs_moved:
+            new_dist += sqrt((p[0] - n_middle)**2 + (p[1] - m_middle)**2)
+        distances.append(new_dist)
 
-    print(counts)
-    print(prod(counts))
+    min_d = min(distances)
+    print(distances.index(min_d), min_d)
