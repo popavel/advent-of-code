@@ -19,64 +19,16 @@ class Node:
         return self.__str__()
 
 
-if __name__ == '__main__':
-    grid = []
-    with open('input-a.txt', 'r') as f:
-        for line in f:
-            grid += [line.strip()]
-
-    # print('\n'.join(grid))
-
-    graph = []
-    for i in range(len(grid)):
-        row = []
-        for j in range(len(grid[i])):
-            if grid[i][j] == '.':
-                row += [Node(i, j, 'n')]
-            elif grid[i][j] == 'S':
-                row += [Node(i, j, 's')]
-            elif grid[i][j] == 'E':
-                row += [Node(i, j, 'e')]
-            elif grid[i][j] == '#':
-                row += [Node(i, j, '#')]
-            else:
-                raise Exception('Invalid grid character.')
-        graph += [row]
-
-    # print(graph)
-
-    s = None
-    e = None
-    for i in range(len(graph)):
-        for j in range(len(graph[i])):
-            if graph[i][j].label == '#':
-                continue
-            else:
-                if graph[i + 1][j].label != '#':
-                    graph[i][j].neighbours += [graph[i + 1][j]]
-                if graph[i - 1][j].label != '#':
-                    graph[i][j].neighbours += [graph[i - 1][j]]
-                if graph[i][j + 1].label != '#':
-                    graph[i][j].neighbours += [graph[i][j + 1]]
-                if graph[i][j - 1].label != '#':
-                    graph[i][j].neighbours += [graph[i][j - 1]]
-            if graph[i][j].label == 's':
-                s = graph[i][j]
-            elif graph[i][j].label == 'e':
-                e = graph[i][j]
-
-    # print(s)
-    # print(e)
-    # print(graph)
-
+def find_distance(s, e):
     q = deque()
     s.distance = 0
-    s.direction = 'e'
     q.append(s)
     while len(q) > 0:
         current = min(q, key=lambda x: x.distance)
         q.remove(current)
         current.visited = True
+        if current == e:
+            break
         for n in current.neighbours:
             if not n.visited:
                 cost = None
@@ -143,11 +95,102 @@ if __name__ == '__main__':
                     n.parents += [current]
                 if n not in q:
                     q.append(n)
+    return e.distance
 
-    print(e.distance)
-    # print(e)
-    # next_node = e.parents[0]
-    # while next_node.label != 's':
-    #     print(next_node)
-    #     next_node = next_node.parents[0]
-    # print(next_node)
+
+def initialize_graph(graph):
+    for i in range(len(graph)):
+        for j in range(len(graph[i])):
+            graph[i][j].visited = False
+            graph[i][j].distance = math.inf
+            graph[i][j].direction = None
+            graph[i][j].parents = []
+
+
+if __name__ == '__main__':
+    # a much more efficient way would be to remove any node that requires a turn.
+    #  Example:
+    #   ######
+    #   #de
+    #   #c##
+    #   #ab
+    #   ######
+    # Remove the nodes a and d and define edges between b and c and c and e.
+    # If a == S, do not remove it, but directly define the corresponding edge cost. Same for a == E.
+    grid = []
+    with open('input-a.txt', 'r') as f:
+        for line in f:
+            grid += [line.strip()]
+    graph = []
+    for i in range(len(grid)):
+        row = []
+        for j in range(len(grid[i])):
+            if grid[i][j] == '.':
+                row += [Node(i, j, 'n')]
+            elif grid[i][j] == 'S':
+                row += [Node(i, j, 's')]
+            elif grid[i][j] == 'E':
+                row += [Node(i, j, 'e')]
+            elif grid[i][j] == '#':
+                row += [Node(i, j, '#')]
+            else:
+                raise Exception('Invalid grid character.')
+        graph += [row]
+
+    initialize_graph(graph)
+
+    s = None
+    e = None
+    for i in range(len(graph)):
+        for j in range(len(graph[i])):
+            if graph[i][j].label == '#':
+                continue
+            else:
+                if graph[i + 1][j].label != '#':
+                    graph[i][j].neighbours += [graph[i + 1][j]]
+                if graph[i - 1][j].label != '#':
+                    graph[i][j].neighbours += [graph[i - 1][j]]
+                if graph[i][j + 1].label != '#':
+                    graph[i][j].neighbours += [graph[i][j + 1]]
+                if graph[i][j - 1].label != '#':
+                    graph[i][j].neighbours += [graph[i][j - 1]]
+            if graph[i][j].label == 's':
+                s = graph[i][j]
+            elif graph[i][j].label == 'e':
+                e = graph[i][j]
+
+    s.direction = 'e'
+    min_distance = find_distance(s, e)
+    seats = []
+    curr_node = e
+    while curr_node != s:
+        seats += [curr_node.coordinates]
+        curr_node = curr_node.parents[0]
+    seats += [s.coordinates]
+    for i in range(len(graph)):
+        for j in range(len(graph[i])):
+            n = graph[i][j]
+            if n.coordinates not in seats:
+                possible_seats = []
+                initialize_graph(graph)
+                s.direction = 'e'
+                d0 = find_distance(s, n)
+                curr_node = n
+                while curr_node != s and len(curr_node.parents) > 0:
+                    possible_seats += [curr_node.coordinates]
+                    curr_node = curr_node.parents[0]
+                direction = n.direction
+                initialize_graph(graph)
+                n.direction = direction
+                d1 = find_distance(n, e)
+                curr_node = e
+                while curr_node != n and len(curr_node.parents) > 0:
+                    possible_seats += [curr_node.coordinates]
+                    curr_node = curr_node.parents[0]
+                if d0 + d1 == min_distance:
+                    for seat in possible_seats:
+                        if seat not in seats:
+                            seats += [seat]
+    print(len(seats))
+    print(seats)
+    print(min_distance)
