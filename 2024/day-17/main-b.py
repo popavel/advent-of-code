@@ -20,20 +20,8 @@ def evaluate(op, regs):
             raise ValueError(f'Unknown value {op}')
 
 
-if __name__ == '__main__':
-    start_test = {'A': 729, 'B': 0, 'C': 0}
-    p_test = [0, 1, 5, 4, 3, 0]
-    # start_input = {'A': 64584136, 'B': 0, 'C': 0}
-    start_input = {'A': 37221334433268, 'B': 0, 'C': 0}
-    p_input = [2, 4, 1, 2, 7, 5, 1, 3, 4, 3, 5, 5, 0, 3, 3, 0]
-
-    start_b = {'A': 2024, 'B': 0, 'C': 0}
-    start_b1 = {'A': 117440, 'B': 0, 'C': 0}
-    input_b = [0, 3, 5, 4, 3, 0]
-
-    p = p_input
-    regs = start_input
-
+def evaluate_program(a_new, p):
+    regs = {'A': a_new, 'B': 0, 'C': 0}
     output = []
     idx = 0
     while idx < len(p):
@@ -75,6 +63,39 @@ if __name__ == '__main__':
             case _:
                 raise ValueError(f'Unknown instruction {instr}')
         idx += 2
+    return output
 
-    output_str = ','.join(map(str, output))
-    print(output_str)
+
+if __name__ == '__main__':
+    start_test = {'A': 729, 'B': 0, 'C': 0}
+    p_test = [0, 1, 5, 4, 3, 0]
+    start_input = {'A': 64584136, 'B': 0, 'C': 0}
+    p_input = [2, 4, 1, 2, 7, 5, 1, 3, 4, 3, 5, 5, 0, 3, 3, 0]
+
+    start_b = {'A': 2024, 'B': 0, 'C': 0}
+    start_b1 = {'A': 117440, 'B': 0, 'C': 0}
+    input_b = [0, 3, 5, 4, 3, 0]
+
+    p = p_input
+    regs = start_input
+
+    a = 1
+    idx = len(p) - 2
+    for output in reversed(p[:-1]):
+        print(a)
+        a_new = a * 8
+        stop = False
+        i = 0
+        while not stop:
+            output_values = evaluate_program(a_new + i, p)
+            print(output_values)
+            if output_values == p[idx:]:
+                a_new += i
+                stop = True
+                break
+            if not stop:
+                i += 1
+        a = a_new
+        idx -= 1
+
+    print(a)
