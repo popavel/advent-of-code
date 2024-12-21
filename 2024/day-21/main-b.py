@@ -1,4 +1,3 @@
-from functools import cache
 from itertools import pairwise
 
 import graphs
@@ -16,10 +15,9 @@ def split_on_a(seq: str) -> list[str]:
     return split
 
 
-@cache
 def find_shortest_seq(sequence: str, depth: int) -> int:
-    # if (sequence, depth) in memo_dict.keys():
-    #     return memo_dict[(sequence, depth)]
+    if (sequence, depth) in memo_dict.keys():
+        return memo_dict[(sequence, depth)]
 
     res = 0
     sequence = 'A' + sequence
@@ -31,6 +29,9 @@ def find_shortest_seq(sequence: str, depth: int) -> int:
             lengths = []
             for s in new_sequences:
                 new_length = find_shortest_seq(s, depth - 1)
+                # Why shoud it be memoized here, and not directly before return?
+                if (s, depth - 1) not in memo_dict.keys():
+                    memo_dict[(s, depth - 1)] = new_length
                 lengths.append(new_length)
             res += min(lengths)
 
