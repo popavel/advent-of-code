@@ -1,4 +1,4 @@
-from graph import Node, topological_sort
+from graph import Node
 
 
 def read_input(file_name: str) -> tuple[dict[str, int], dict[str, tuple[str, str, str]]]:
@@ -22,6 +22,10 @@ def read_input(file_name: str) -> tuple[dict[str, int], dict[str, tuple[str, str
             par0 = par0.strip()
             op = op.strip()
             par1 = par1.strip()
+            if par0 == par1:
+                raise ValueError(f"Invalid operation: {par0} {op} {par1}")
+            if par1 < par0:
+                par0, par1 = par1, par0
             wire_parent_and_operation[wire] = (par0, par1, op)
 
             line = file.readline().strip()
@@ -48,26 +52,10 @@ def compute_value(v0: int, v1: int, op: str) -> int:
 
 def run(file_name: str):
     wire_value, wire_parent_and_operation = read_input(file_name)
-    nodes = get_graph(wire_value, wire_parent_and_operation)
-    nodes = topological_sort(nodes)
-    for n in nodes:
-        if n.value in wire_value.keys():
-            continue
-        par0, par1, op = wire_parent_and_operation[n.value]
-        v0 = wire_value[par0]
-        v1 = wire_value[par1]
-        res = compute_value(v0, v1, op)
-        wire_value[n.value] = res
+    wire_parent_and_operation_reversed = {v: k for k, v in wire_parent_and_operation.items()}
 
-    zs = {}
-    for w, v in wire_value.items():
-        if w[0] == 'z':
-            zs[w] = v
-    zs = sorted(zs.items(), key=lambda x: x[0])
-    zs = list(reversed([x[1] for x in zs]))
-
-    result = zs2decimal(zs)
-    print(result)
+    wrong_pairs_manually = ['z37', 'vkg', 'z20', 'cqr', 'nfj', 'ncd', 'z15', 'qnw']
+    print(','.join(sorted(wrong_pairs_manually)))
 
 
 def get_graph(wire_value: dict[str, int], wire_parent_and_operation: dict[str, tuple[str, str, str]]) -> list[Node]:
@@ -92,4 +80,4 @@ def get_graph(wire_value: dict[str, int], wire_parent_and_operation: dict[str, t
 if __name__ == '__main__':
     # run("test-a.txt")
     # run("test-a1.txt")
-    run("input-a.txt")
+    run("input-incorrect-wires-swapped-back.txt")
